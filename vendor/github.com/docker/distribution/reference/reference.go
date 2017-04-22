@@ -187,6 +187,7 @@ func SplitHostname(named Named) (string, string) {
 // If an error was encountered it is returned, along with a nil Reference.
 // NOTE: Parse will not handle short digests.
 func Parse(s string) (Reference, error) {
+	// 正常返回 size=3 的 capture，NameRegexp/TagRegexp/DigestRegexp
 	matches := ReferenceRegexp.FindStringSubmatch(s)
 	if matches == nil {
 		if s == "" {
@@ -328,6 +329,7 @@ func TrimNamed(ref Named) Named {
 }
 
 func getBestReferenceType(ref reference) Reference {
+	// 空名字的时候只匹配 digest
 	if ref.Name() == "" {
 		// Allow digest only references
 		if ref.digest != "" {
@@ -335,6 +337,7 @@ func getBestReferenceType(ref reference) Reference {
 		}
 		return nil
 	}
+	// 越精确越好
 	if ref.tag == "" {
 		if ref.digest != "" {
 			return canonicalReference{

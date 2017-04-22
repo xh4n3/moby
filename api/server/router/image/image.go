@@ -40,6 +40,7 @@ func (r *imageRouter) initRoutes() {
 		// POST
 		router.NewPostRoute("/commit", r.postCommit),
 		router.NewPostRoute("/images/load", r.postImagesLoad),
+		// Image Create 操作入口
 		router.NewPostRoute("/images/create", r.postImagesCreate, router.WithCancel),
 		router.NewPostRoute("/images/{name:.*}/push", r.postImagesPush, router.WithCancel),
 		router.NewPostRoute("/images/{name:.*}/tag", r.postImagesTag),

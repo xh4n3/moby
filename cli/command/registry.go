@@ -26,6 +26,7 @@ func ElectAuthServer(ctx context.Context, cli *DockerCli) string {
 	// used. This is essential in cross-platforms environment, where for
 	// example a Linux client might be interacting with a Windows daemon, hence
 	// the default registry URL might be Windows specific.
+	// 先从 Docker Daemon 中取系统默认的 Registry，如果取不到就拿默认的 index.docker.io
 	serverAddress := registry.IndexServer
 	if info, err := cli.Client().Info(ctx); err != nil {
 		fmt.Fprintf(cli.Out(), "Warning: failed to get default registry endpoint from daemon (%v). Using system default: %s\n", err, serverAddress)
@@ -68,6 +69,7 @@ func ResolveAuthConfig(ctx context.Context, cli *DockerCli, index *registrytypes
 		configKey = ElectAuthServer(ctx, cli)
 	}
 
+	// TODO: 应该有配置文件存储
 	a, _ := cli.CredentialsStore(configKey).Get(configKey)
 	return a
 }

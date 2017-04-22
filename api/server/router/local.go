@@ -7,6 +7,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+// 实现了 Rest 接口中的中间件层，现在只有 cancellable
+
 // RouteWrapper wraps a route with extra functionality.
 // It is passed in when creating a new route.
 type RouteWrapper func(r Route) Route
@@ -35,6 +37,7 @@ func (l localRoute) Path() string {
 }
 
 // NewRoute initializes a new local route for the router.
+// 从 opts 最后开始一层层包裹 handler
 func NewRoute(method, path string, handler httputils.APIFunc, opts ...RouteWrapper) Route {
 	var r Route = localRoute{method, path, handler}
 	for _, o := range opts {
@@ -73,9 +76,11 @@ func NewHeadRoute(path string, handler httputils.APIFunc, opts ...RouteWrapper) 
 	return NewRoute("HEAD", path, handler, opts...)
 }
 
+// 允许 CloseNotifier 来中断
 func cancellableHandler(h httputils.APIFunc) httputils.APIFunc {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
 		if notifier, ok := w.(http.CloseNotifier); ok {
+			// 当用户中断连接后，notify 会收到消息
 			notify := notifier.CloseNotify()
 			notifyCtx, cancel := context.WithCancel(ctx)
 			finished := make(chan struct{})

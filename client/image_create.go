@@ -12,6 +12,7 @@ import (
 
 // ImageCreate creates a new image based in the parent options.
 // It returns the JSON content in the response body.
+// 创建 Image，image 的 FULL URL 传给 parentReference
 func (cli *Client) ImageCreate(ctx context.Context, parentReference string, options types.ImageCreateOptions) (io.ReadCloser, error) {
 	ref, err := reference.ParseNormalizedNamed(parentReference)
 	if err != nil {
@@ -19,8 +20,12 @@ func (cli *Client) ImageCreate(ctx context.Context, parentReference string, opti
 	}
 
 	query := url.Values{}
+	// 如果是默认的镜像，去除前缀
 	query.Set("fromImage", reference.FamiliarName(ref))
+	// 返回 Tag 或者 Digest
 	query.Set("tag", getAPITagFromNamedRef(ref))
+	// TODO: 目前只有发现这里是有 try 这个方法的，不知道为什么要这样做
+	// server 端是有 router.WithCancel，逻辑貌似是在 Server 端实现
 	resp, err := cli.tryImageCreate(ctx, query, options.RegistryAuth)
 	if err != nil {
 		return nil, err

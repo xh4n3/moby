@@ -293,6 +293,7 @@ func (s *DefaultService) LookupPushEndpoints(hostname string) (endpoints []APIEn
 	return endpoints, err
 }
 
+// 看 Registry 是否为 v2
 func (s *DefaultService) lookupEndpoints(hostname string) (endpoints []APIEndpoint, err error) {
 	endpoints, err = s.lookupV2Endpoints(hostname)
 	if err != nil {

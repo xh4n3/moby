@@ -86,6 +86,7 @@ func pullImage(ctx context.Context, dockerCli *command.DockerCli, image string, 
 		return err
 	}
 
+	// 取 Registry 认证信息
 	authConfig := command.ResolveAuthConfig(ctx, dockerCli, repoInfo.Index)
 	encodedAuth, err := command.EncodeAuthToBase64(authConfig)
 	if err != nil {
@@ -96,6 +97,7 @@ func pullImage(ctx context.Context, dockerCli *command.DockerCli, image string, 
 		RegistryAuth: encodedAuth,
 	}
 
+	// TODO: 居然是 ImageCreate，那 ImagePull 呢?
 	responseBody, err := dockerCli.Client().ImageCreate(ctx, image, options)
 	if err != nil {
 		return err
@@ -162,6 +164,7 @@ func createContainer(ctx context.Context, dockerCli *command.DockerCli, containe
 		namedRef        reference.Named
 	)
 
+	// ContainerID 可以写入到宿主机某个文件上
 	cidfile := hostConfig.ContainerIDFile
 	if cidfile != "" {
 		var err error
@@ -171,6 +174,7 @@ func createContainer(ctx context.Context, dockerCli *command.DockerCli, containe
 		defer containerIDFile.Close()
 	}
 
+	// Image 的 Parse 在这里做
 	ref, err := reference.ParseAnyReference(config.Image)
 	if err != nil {
 		return nil, err
@@ -191,6 +195,10 @@ func createContainer(ctx context.Context, dockerCli *command.DockerCli, containe
 	//create the container
 	response, err := dockerCli.Client().ContainerCreate(ctx, config, hostConfig, networkingConfig, name)
 
+	// 先创建试试，如果找不到 Image，再尝试拉最新的 Image
+	// 有一个问题
+	// 当两个 Image 版本是同一个 Tag 的时候，这种机制会使得新的 Image 不会被强制更新下来，所以要避免两个 Image 是同一个 Tag 名称
+	// 但好处是，当系统没有联网时，Docker 不会因为 Pull Image 失败而不能创建容器
 	//if image not found try to pull it
 	if err != nil {
 		if apiclient.IsErrImageNotFound(err) && namedRef != nil {

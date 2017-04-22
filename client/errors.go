@@ -31,6 +31,7 @@ func ErrorConnectionFailed(host string) error {
 	return errConnectionFailed{host: host}
 }
 
+// 一种不错的把 Error 导出的方式
 type notFound interface {
 	error
 	NotFound() bool // Is the error a NotFound error

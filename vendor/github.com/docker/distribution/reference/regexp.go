@@ -2,6 +2,8 @@ package reference
 
 import "regexp"
 
+// 对 Regex 做了比较好的封装
+// 把匹配做成了模块化
 var (
 	// alphaNumericRegexp defines the alpha numeric atom, typically a
 	// component of names. This only allows lower case characters and digits.

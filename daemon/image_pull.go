@@ -104,6 +104,7 @@ func (daemon *Daemon) pullImageWithReference(ctx context.Context, ref reference.
 		Schema2Types:    distribution.ImageTypes,
 	}
 
+	// 调用 distribution 里面的 Pull
 	err := distribution.Pull(ctx, ref, imagePullConfig)
 	close(progressChan)
 	<-writesDone

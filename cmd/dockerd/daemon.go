@@ -112,6 +112,7 @@ func migrateKey(config *config.Config) (err error) {
 	return nil
 }
 
+// Daemon 开始的地方
 func (cli *DaemonCli) start(opts daemonOptions) (err error) {
 	stopc := make(chan bool)
 	defer close(stopc)
@@ -316,6 +317,7 @@ func (cli *DaemonCli) start(opts daemonOptions) (err error) {
 	cli.d = d
 
 	d.SetCluster(c)
+	// 注册 Rest 接口路由
 	initRouter(api, d, c)
 
 	cli.setupConfigReloadTrap()

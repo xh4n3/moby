@@ -41,6 +41,7 @@ func ParseNormalizedNamed(s string) (Named, error) {
 	} else {
 		remoteName = remainder
 	}
+	// repository 名字必须得小写
 	if strings.ToLower(remoteName) != remoteName {
 		return nil, errors.New("invalid reference format: repository name must be lowercase")
 	}
@@ -81,6 +82,7 @@ func splitDockerDomain(name string) (domain, remainder string) {
 // For example, "docker.io/library/redis" will have the familiar
 // name "redis" and "docker.io/dmcgowan/myapp" will be "dmcgowan/myapp".
 // Returns a familiarized named only reference.
+// 有些以 docker.io/library 开头的，是默认官方的镜像名称前缀，是要去除的
 func familiarizeName(named namedRepository) repository {
 	repo := repository{
 		domain: named.Domain(),

@@ -70,6 +70,7 @@ func (s *imageRouter) postCommit(ctx context.Context, w http.ResponseWriter, r *
 }
 
 // Creates an image from Pull or from Import
+// ImageCreate 服务端操作
 func (s *imageRouter) postImagesCreate(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
 	if err := httputils.ParseForm(r); err != nil {
 		return err
