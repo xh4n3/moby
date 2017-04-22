@@ -163,7 +163,9 @@ func main() {
 	stdin, stdout, stderr := term.StdStreams()
 	logrus.SetOutput(stderr)
 
+	// 主入口，stdin 作为 in，stdout 作为 out
 	dockerCli := command.NewDockerCli(stdin, stdout, stderr)
+	// 初始化 cobra command
 	cmd := newDockerCommand(dockerCli)
 
 	if err := cmd.Execute(); err != nil {

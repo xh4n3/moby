@@ -38,6 +38,7 @@ func NewCreateCommand(dockerCli *command.DockerCli) *cobra.Command {
 			if len(args) > 1 {
 				copts.Args = args[1:]
 			}
+			// 真正执行 create 操作
 			return runCreate(dockerCli, cmd.Flags(), &opts, copts)
 		},
 	}
@@ -57,15 +58,18 @@ func NewCreateCommand(dockerCli *command.DockerCli) *cobra.Command {
 }
 
 func runCreate(dockerCli *command.DockerCli, flags *pflag.FlagSet, opts *createOptions, copts *containerOptions) error {
+	// 从 cmdline 里面解析各种配置
 	containerConfig, err := parse(flags, copts)
 	if err != nil {
 		reportError(dockerCli.Err(), "create", err.Error(), true)
 		return cli.StatusError{StatusCode: 125}
 	}
+	// 这里 grpc 是阻塞操作
 	response, err := createContainer(context.Background(), dockerCli, containerConfig, opts.name)
 	if err != nil {
 		return err
 	}
+	// Container ID 写回 terminal
 	fmt.Fprintln(dockerCli.Out(), response.ID)
 	return nil
 }
