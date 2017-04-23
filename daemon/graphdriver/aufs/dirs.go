@@ -29,6 +29,7 @@ func loadIds(root string) ([]string, error) {
 //
 // If there are no lines in the file then the id has no parent
 // and an empty slice is returned.
+// 从 parent image 的 layers metedata 里面读 layer 的 id
 func getParentIDs(root, id string) ([]string, error) {
 	f, err := os.Open(path.Join(root, "layers", id))
 	if err != nil {

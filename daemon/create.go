@@ -24,11 +24,13 @@ import (
 )
 
 // CreateManagedContainer creates a container that is managed by a Service
+// TODO: 这个 Service 是 Swarm?
 func (daemon *Daemon) CreateManagedContainer(params types.ContainerCreateConfig) (containertypes.ContainerCreateCreatedBody, error) {
 	return daemon.containerCreate(params, true)
 }
 
 // ContainerCreate creates a regular container
+// Daemon 端 ContainerCreate 入口
 func (daemon *Daemon) ContainerCreate(params types.ContainerCreateConfig) (containertypes.ContainerCreateCreatedBody, error) {
 	return daemon.containerCreate(params, false)
 }
@@ -52,11 +54,13 @@ func (daemon *Daemon) containerCreate(params types.ContainerCreateConfig, manage
 	if params.HostConfig == nil {
 		params.HostConfig = &containertypes.HostConfig{}
 	}
+	// 调整已有的资源配置至合法范围内
 	err = daemon.adaptContainerSettings(params.HostConfig, params.AdjustCPUShares)
 	if err != nil {
 		return containertypes.ContainerCreateCreatedBody{Warnings: warnings}, err
 	}
 
+	// 验证完毕，开始创建
 	container, err := daemon.create(params, managed)
 	if err != nil {
 		return containertypes.ContainerCreateCreatedBody{Warnings: warnings}, daemon.imageNotExistToErrcode(err)
@@ -81,16 +85,19 @@ func (daemon *Daemon) create(params types.ContainerCreateConfig, managed bool) (
 			return nil, err
 		}
 
+		// runtime.GOOS 可以取到当前 OS
 		if runtime.GOOS == "solaris" && img.OS != "solaris " {
 			return nil, errors.New("Platform on which parent image was created is not Solaris")
 		}
 		imgID = img.ID()
 	}
 
+	// 合并 config 和 Image 内部的设定，因为每一层 Image 其实是包含默认的 Endpoint 这样的设置的，只不过我们可以一层层覆盖掉
 	if err := daemon.mergeAndVerifyConfig(params.Config, img); err != nil {
 		return nil, err
 	}
 
+	// 合并 log config，验证是否存在对应 logging driver
 	if err := daemon.mergeAndVerifyLogConfig(&params.HostConfig.LogConfig); err != nil {
 		return nil, err
 	}
@@ -99,6 +106,7 @@ func (daemon *Daemon) create(params types.ContainerCreateConfig, managed bool) (
 		return nil, err
 	}
 	defer func() {
+		// 不错的思路，提前将 retErr 定义后 defer 就可以取到函数返回前结果
 		if retErr != nil {
 			if err := daemon.cleanupContainer(container, true, true); err != nil {
 				logrus.Errorf("failed to cleanup container on create error: %v", err)
@@ -106,6 +114,7 @@ func (daemon *Daemon) create(params types.ContainerCreateConfig, managed bool) (
 		}
 	}()
 
+	// TODO: security 相关
 	if err := daemon.setSecurityOptions(container, params.HostConfig); err != nil {
 		return nil, err
 	}
@@ -113,6 +122,7 @@ func (daemon *Daemon) create(params types.ContainerCreateConfig, managed bool) (
 	container.HostConfig.StorageOpt = params.HostConfig.StorageOpt
 
 	// Set RWLayer for container after mount labels have been set
+	// 容器运行在新的读写层上面
 	if err := daemon.setRWLayer(container); err != nil {
 		return nil, err
 	}
@@ -217,12 +227,14 @@ func (daemon *Daemon) setRWLayer(container *container.Container) error {
 		layerID = img.RootFS.ChainID()
 	}
 
+	// 创建读写层
 	rwLayerOpts := &layer.CreateRWLayerOpts{
 		MountLabel: container.MountLabel,
 		InitFunc:   daemon.getLayerInit(),
 		StorageOpt: container.HostConfig.StorageOpt,
 	}
 
+	// 新的读写层以容器 ID 命名
 	rwLayer, err := daemon.layerStore.CreateRWLayer(container.ID, layerID, rwLayerOpts)
 	if err != nil {
 		return err
@@ -273,6 +285,7 @@ func (daemon *Daemon) verifyNetworkingConfig(nwConfig *networktypes.NetworkingCo
 		return nil
 	}
 	if len(nwConfig.EndpointsConfig) == 1 {
+		// 验证每个端口的 IP 合法性
 		for _, v := range nwConfig.EndpointsConfig {
 			if v != nil && v.IPAMConfig != nil {
 				if v.IPAMConfig.IPv4Address != "" && net.ParseIP(v.IPAMConfig.IPv4Address).To4() == nil {

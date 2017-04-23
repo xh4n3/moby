@@ -252,6 +252,12 @@ func checkKernel() error {
 
 // adaptContainerSettings is called during container creation to modify any
 // settings necessary in the HostConfig structure.
+// 对用户输入的参数进行过滤以及 adapt
+// CPUShare 过高或过低直接设置成同侧最值
+// 限制 Memory 但没有设置 MemorySwap 时，默认使用两倍 Memory 作为 Swap
+// 给共享内存设置默认值
+// 默认关闭 OomKillDisable
+// 设置 MemorySwappiness = -1
 func (daemon *Daemon) adaptContainerSettings(hostConfig *containertypes.HostConfig, adjustCPUShares bool) error {
 	if adjustCPUShares && hostConfig.CPUShares > 0 {
 		// Handle unsupported CPUShares

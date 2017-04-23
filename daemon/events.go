@@ -28,6 +28,7 @@ func (daemon *Daemon) LogContainerEventWithAttributes(container *container.Conta
 		ID:         container.ID,
 		Attributes: attributes,
 	}
+	// 通过 pubsub 发布 Event log
 	daemon.EventsService.Log(action, events.ContainerEventType, actor)
 }
 

@@ -58,6 +58,8 @@ import (
 	"github.com/docker/go-connections/tlsconfig"
 )
 
+// 用户不一定需要 Docker CLI 来操作 Docker Daemon，我们可以直接在我们自己代码里面调用 Docker Client 的库来操作
+
 // Client is the API client that performs all operations
 // against a docker server.
 type Client struct {
@@ -86,6 +88,7 @@ type Client struct {
 // Use DOCKER_API_VERSION to set the version of the API to reach, leave empty for latest.
 // Use DOCKER_CERT_PATH to load the TLS certificates from.
 // Use DOCKER_TLS_VERIFY to enable or disable TLS verification, off by default.
+// 读取环境变量中的配置项
 func NewEnvClient() (*Client, error) {
 	var client *http.Client
 	if dockerCertPath := os.Getenv("DOCKER_CERT_PATH"); dockerCertPath != "" {

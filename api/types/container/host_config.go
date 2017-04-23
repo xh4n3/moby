@@ -281,6 +281,8 @@ type LogConfig struct {
 // Resources contains container's resources (cgroups config, ulimits...)
 type Resources struct {
 	// Applicable to all platforms
+	// CpuShares 是相对值，如果每个容器都设置成相同的，那么 CPU 的调度其实是 RoundRobin
+	// Cgroup 里面默认的值是 1024
 	CPUShares int64 `json:"CpuShares"` // CPU shares (relative weight vs. other containers)
 	Memory    int64 // Memory limit (in bytes)
 	NanoCPUs  int64 `json:"NanoCpus"` // CPU quota in units of 10<sup>-9</sup> CPUs.

@@ -496,15 +496,21 @@ func (ls *layerStore) CreateRWLayer(name string, parent ChainID, opts *CreateRWL
 		}()
 	}
 
+	// m 是新的 layer
 	m = &mountedLayer{
 		name:       name,
+		// parent 是我们引用的 Image
 		parent:     p,
+		// mountID 是随机产生的
 		mountID:    ls.mountID(name),
 		layerStore: ls,
 		references: map[RWLayer]*referencedRWLayer{},
 	}
 
 	if initFunc != nil {
+		// 随机产生的 graphID 会被用于建立
+		// /var/lib/docker/aufs/mnt/<graphID>-init
+		// 我们需要建立 /var/lib/docker/aufs/<image_id>/mnt 和 /var/lib/docker/aufs/<image_id>/diff
 		pid, err = ls.initMount(m.mountID, pid, mountLabel, initFunc, storageOpt)
 		if err != nil {
 			return nil, err
@@ -624,6 +630,7 @@ func (ls *layerStore) initMount(graphID, parent, mountLabel string, initFunc Mou
 	// which are expecting this layer with this special name. If all
 	// graph drivers can be updated to not rely on knowing about this layer
 	// then the initID should be randomly generated.
+	// 加上 --init 标记了这是一个容器的读写层，实际上可以去掉，为了兼容而已
 	initID := fmt.Sprintf("%s-init", graphID)
 
 	createOpts := &graphdriver.CreateOpts{
@@ -631,6 +638,7 @@ func (ls *layerStore) initMount(graphID, parent, mountLabel string, initFunc Mou
 		StorageOpt: storageOpt,
 	}
 
+	// 默认用 aufs, 此处也是采用 driver 的形式
 	if err := ls.driver.CreateReadWrite(initID, parent, createOpts); err != nil {
 		return "", err
 	}

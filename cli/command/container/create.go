@@ -193,6 +193,7 @@ func createContainer(ctx context.Context, dockerCli *command.DockerCli, containe
 	}
 
 	//create the container
+	// dockerCli.Client() 即 client package 中的 Client
 	response, err := dockerCli.Client().ContainerCreate(ctx, config, hostConfig, networkingConfig, name)
 
 	// 先创建试试，如果找不到 Image，再尝试拉最新的 Image

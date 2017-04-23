@@ -58,6 +58,7 @@ type Config struct {
 	OnBuild         []string            // ONBUILD metadata that were defined on the image Dockerfile
 	Labels          map[string]string   // List of labels set to this container
 	StopSignal      string              `json:",omitempty"` // Signal to stop a container
+	// APIVersion 1.25 后才支持设置，stop container 时，一开始使用 SIGTERM 允许应用 gracefully down，timeout 后使用 SIGKILL，强制退出
 	StopTimeout     *int                `json:",omitempty"` // Timeout (in seconds) to stop a container
 	Shell           strslice.StrSlice   `json:",omitempty"` // Shell for shell-form of RUN, CMD, ENTRYPOINT
 }

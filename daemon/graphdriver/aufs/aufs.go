@@ -62,7 +62,10 @@ var (
 	enableDirperm     bool
 )
 
+// TODO: read aufs and overlay
+
 func init() {
+	// 向上注册
 	graphdriver.Register("aufs", Init)
 }
 
@@ -208,6 +211,8 @@ func (a *Driver) Exists(id string) bool {
 
 // CreateReadWrite creates a layer that is writable for use as a container
 // file system.
+// 为容器创建读写层
+// 只是建立了两个文件夹和复制了 metadata
 func (a *Driver) CreateReadWrite(id, parent string, opts *graphdriver.CreateOpts) error {
 	return a.Create(id, parent, opts)
 }
@@ -220,10 +225,12 @@ func (a *Driver) Create(id, parent string, opts *graphdriver.CreateOpts) error {
 		return fmt.Errorf("--storage-opt is not supported for aufs")
 	}
 
+	// 创建数据目录， mnt 和 diff
 	if err := a.createDirsFor(id); err != nil {
 		return err
 	}
 	// Write the layers metadata
+	// layers 用于保存 metadata
 	f, err := os.Create(path.Join(a.rootPath(), "layers", id))
 	if err != nil {
 		return err
@@ -236,9 +243,12 @@ func (a *Driver) Create(id, parent string, opts *graphdriver.CreateOpts) error {
 			return err
 		}
 
+		// 第一行写 parent 的 layer id
 		if _, err := fmt.Fprintln(f, parent); err != nil {
 			return err
 		}
+
+		// 其余跟着 parent 自己的 layers metatdata 里面的 id
 		for _, i := range ids {
 			if _, err := fmt.Fprintln(f, i); err != nil {
 				return err
@@ -251,6 +261,7 @@ func (a *Driver) Create(id, parent string, opts *graphdriver.CreateOpts) error {
 
 // createDirsFor creates two directories for the given id.
 // mnt and diff
+// 默认配置中，常见的 mnt 目录和 diff 目录
 func (a *Driver) createDirsFor(id string) error {
 	paths := []string{
 		"mnt",
@@ -264,6 +275,8 @@ func (a *Driver) createDirsFor(id string) error {
 	// Directory permission is 0755.
 	// The path of directories are <aufs_root_path>/mnt/<image_id>
 	// and <aufs_root_path>/diff/<image_id>
+	// docker info 可以看到 Storage Driver 和对应的 Root Dir，一般为 /var/lib/docker/aufs
+	// 我们需要建立 /var/lib/docker/aufs/<image_id>/mnt 和 /var/lib/docker/aufs/<image_id>/diff
 	for _, p := range paths {
 		if err := idtools.MkdirAllAs(path.Join(a.rootPath(), p, id), 0755, rootUID, rootGID); err != nil {
 			return err

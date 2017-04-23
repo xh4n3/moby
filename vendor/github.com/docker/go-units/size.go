@@ -83,6 +83,7 @@ func FromHumanSize(size string) (int64, error) {
 // in bytes, kibibytes, mebibytes, gibibytes, or tebibytes and
 // returns the number of bytes, or -1 if the string is unparseable.
 // Units are case-insensitive, and the 'b' suffix is optional.
+// 1m -> 1024 * 1024 的转换
 func RAMInBytes(size string) (int64, error) {
 	return parseSize(size, binaryMap)
 }

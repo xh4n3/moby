@@ -126,6 +126,7 @@ func ValidateLogOpts(name string, cfg map[string]string) error {
 		}
 	}
 
+	// logging 是采用 driver 的形式存在的
 	if !factory.driverRegistered(name) {
 		return fmt.Errorf("logger: no log driver named '%s' is registered", name)
 	}

@@ -158,6 +158,7 @@ func (daemon *Daemon) getLogger(container *container.Container) (logger.Logger, 
 // mergeLogConfig merges the daemon log config to the container's log config if the container's log driver is not specified.
 func (daemon *Daemon) mergeAndVerifyLogConfig(cfg *containertypes.LogConfig) error {
 	if cfg.Type == "" {
+		// daemon 是可以设置默认 log 配置
 		cfg.Type = daemon.defaultLogConfig.Type
 	}
 

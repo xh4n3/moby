@@ -24,6 +24,7 @@ import (
 // by the cli.
 // It will mutate the specified user configuration (userConf) with the image
 // configuration where the user configuration is incomplete.
+// 如上所述，userConf 没有的地方会以 Image 的设置作为默认选项
 func merge(userConf, imageConf *containertypes.Config) error {
 	if userConf.User == "" {
 		userConf.User = imageConf.User
@@ -31,6 +32,7 @@ func merge(userConf, imageConf *containertypes.Config) error {
 	if len(userConf.ExposedPorts) == 0 {
 		userConf.ExposedPorts = imageConf.ExposedPorts
 	} else if imageConf.ExposedPorts != nil {
+		// 如果 user 也设定了，image 里面也设定了，image 里面多的会加到 user 里面来
 		for port := range imageConf.ExposedPorts {
 			if _, exists := userConf.ExposedPorts[port]; !exists {
 				userConf.ExposedPorts[port] = struct{}{}
@@ -62,6 +64,7 @@ func merge(userConf, imageConf *containertypes.Config) error {
 		}
 	}
 
+	// Image 的 Label 总是会叠加到 config 里面去，user 里面已设定的不会被覆盖
 	if userConf.Labels == nil {
 		userConf.Labels = map[string]string{}
 	}

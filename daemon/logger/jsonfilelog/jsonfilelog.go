@@ -30,6 +30,7 @@ type JSONFileLogger struct {
 }
 
 func init() {
+	// init 中注册 Logging driver
 	if err := logger.RegisterLogDriver(Name, New); err != nil {
 		logrus.Fatal(err)
 	}

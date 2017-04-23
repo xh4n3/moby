@@ -52,6 +52,7 @@ func (r *containerRouter) initRoutes() {
 		router.NewGetRoute("/exec/{id:.*}/json", r.getExecByID),
 		router.NewGetRoute("/containers/{name:.*}/archive", r.getContainersArchive),
 		// POST
+		// 新建容器，没有 withCancel
 		router.NewPostRoute("/containers/create", r.postContainersCreate),
 		router.NewPostRoute("/containers/{name:.*}/kill", r.postContainersKill),
 		router.NewPostRoute("/containers/{name:.*}/pause", r.postContainersPause),
